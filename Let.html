@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI City Memory Ticket Generator</title>
+    <style>
+        /* --- CSS STYLES --- */
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Oswald:wght@500;700&family=Playfair+Display:ital,wght@1,400&display=swap');
+
+        :root {
+            --bg-color: #121212;
+            --ticket-bg: #f4f1ea;
+            --ink-color: #2b2b2b;
+            --accent-color: #e63946;
+            --paper-texture: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.04'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #eee;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Controls Panel (Left) */
+        .controls {
+            width: 350px;
+            padding: 30px;
+            background: #1e1e1e;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        h2 { margin: 0 0 10px 0; font-size: 18px; color: #fff; }
+        label { font-size: 12px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block; }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            box-sizing: border-box;
+        }
+        input:focus { outline: none; border-color: var(--accent-color); }
+
+        button {
+            padding: 15px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+        button:hover { opacity: 0.9; }
+
+        /* Preview Panel (Right) */
+        .preview {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: radial-gradient(#333 1px, transparent 1px);
+            background-size: 20px 20px;
+            padding: 40px;
+        }
+
+        /* TICKET DESIGN */
+        .ticket-wrapper {
+            position: relative;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.6));
+        }
+
+        .ticket {
+            width: 340px;
+            height: 520px; /* 4:5 ish ratio */
+            background-color: var(--ticket-bg);
+            background-image: var(--paper-texture);
+            color: var(--ink-color);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 4px;
+        }
+
+        /* Perforation marks */
+        .ticket::before {
+            content: "";
+            position: absolute;
+            left: -6px; top: 0; bottom: 0;
+            width: 12px;
+            background-image: radial-gradient(circle, #121212 3px, transparent 4px);
+            background-size: 10px 18px;
+            background-repeat: repeat-y;
+            z-index: 2;
+        }
+
+        /* 1. Header */
+        .t-header {
+            padding: 25px 25px 15px 35px;
+            border-bottom: 2px dashed rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .t-city-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+        .t-city-code {
+            font-family: 'Oswald', sans-serif;
+            font-size: 64px;
+            line-height: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+        }
+        .t-series {
+            position: absolute;
+            top: 25px; right: 25px;
+            font-size: 9px;
+            font-family: 'JetBrains Mono', monospace;
+            border: 1px solid #333;
+            padding: 2px 4px;
+            opacity: 0.6;
+        }
+
+        /* 2. Hero / Memory */
+        .t-hero {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .t-icon-box {
+            width: 100px;
+            height: 100px;
+            border: 1.5px solid var(--ink-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            font-size: 40px;
+            position: relative;
+        }
+        /* Vignette effect behind icon */
+        .t-icon-box::after {
+            content: "";
+            position: absolute;
+            top: -10px; left: -10px; right: -10px; bottom: -10px;
+            border: 1px dotted rgba(0,0,0,0.2);
+            border-radius: 50%;
+        }
+
+        .t-memory-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            line-height: 1.2;
+            font-style: italic;
+            margin: 0;
+            max-width: 90%;
+            z-index: 1;
+        }
+
+        /* 3. Footer */
+        .t-footer {
+            padding: 20px 25px 20px 35px;
+            border-top: 2px solid var(--ink-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            background: rgba(0,0,0,0.02);
+        }
+        
+        .t-meta-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .t-meta-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            opacity: 0.5;
+            text-transform: uppercase;
+        }
+        .t-meta-val {
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .t-barcode {
+            height: 24px;
+            width: 80px;
+            background: repeating-linear-gradient(
+                to right,
+                #2b2b2b,
+                #2b2b2b 2px,
+                transparent 2px,
+                transparent 5px,
+                #2b2b2b 6px
+            );
+        }
+
+        /* Micro Details */
+        .crop-mark {
+            position: absolute;
+            width: 10px; height: 10px;
+            border-top: 1px solid #333;
+            border-left: 1px solid #333;
+        }
+        .cm-tl { top: 10px; left: 10px; }
+        .cm-tr { top: 10px; right: 10px; transform: rotate(90deg); }
+        .cm-bl { bottom: 10px; left: 10px; transform: rotate(-90deg); }
+        .cm-br { bottom: 10px; right: 10px; transform: rotate(180deg); }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="controls">
+            <h2>🎫 Ticket Generator</h2>
+            
+            <div>
+                <label>City Name</label>
+                <input type="text" id="inCity" value="Kyoto" oninput="updateTicket()">
+            </div>
+            
+            <div>
+                <label>City Code (3 Letters)</label>
+                <input type="text" id="inCode" value="KYO" maxlength="3" oninput="updateTicket()">
+            </div>
+
+            <div>
+                <label>Memory Title</label>
+                <input type="text" id="inMemory" value="Autumn Tea Ceremony" oninput="updateTicket()">
+            </div>
+            
+            <div>
+                <label>Date</label>
+                <input type="date" id="inDate" value="2025-11-24" oninput="updateTicket()">
+            </div>
+
+            <div>
+                <label>Time</label>
+                <input type="time" id="inTime" value="16:00" oninput="updateTicket()">
+            </div>
+            
+            <div>
+                <label>Icon (Emoji)</label>
+                <input type="text" id="inIcon" value="🍵" oninput="updateTicket()">
+            </div>
+
+            <div>
+                <label>Theme Color</label>
+                <input type="color" id="inColor" value="#e63946" oninput="updateColor()">
+            </div>
+            
+            <button onclick="randomizeSerial()">Generate New Serial</button>
+        </div>
+
+        <div class="preview">
+            <div class="ticket-wrapper">
+                <div class="ticket" id="ticket">
+                    <div class="crop-mark cm-tl"></div>
+                    <div class="crop-mark cm-tr"></div>
+                    <div class="crop-mark cm-bl"></div>
+                    <div class="crop-mark cm-br"></div>
+                    
+                    <div class="t-header" id="headerArea">
+                        <span class="t-series">SERIES 01</span>
+                        <span class="t-city-name" id="outCity">KYOTO</span>
+                        <span class="t-city-code" id="outCode">KYO</span>
+                    </div>
+
+                    <div class="t-hero">
+                        <div class="t-icon-box" id="outIcon">🍵</div>
+                        <h1 class="t-memory-title" id="outMemory">Autumn Tea Ceremony</h1>
+                    </div>
+
+                    <div class="t-footer">
+                        <div class="t-meta-group">
+                            <span class="t-meta-label">Date & Time</span>
+                            <span class="t-meta-val"><span id="outDate">NOV 24</span> | <span id="outTime">16:00</span></span>
+                        </div>
+                        <div class="t-meta-group" style="text-align: right;">
+                            <span class="t-meta-label">Serial No.</span>
+                            <div class="t-barcode"></div>
+                            <span class="t-meta-label" id="outSerial" style="margin-top: 2px;">MTK-9382</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateTicket() {
+            document.getElementById('outCity').innerText = document.getElementById('inCity').value;
+            document.getElementById('outCode').innerText = document.getElementById('inCode').value.toUpperCase();
+            document.getElementById('outMemory').innerText = document.getElementById('inMemory').value;
+            document.getElementById('outIcon').innerText = document.getElementById('inIcon').value;
+            
+            // Format Date
+            const d = new Date(document.getElementById('inDate').value);
+            const options = { month: 'short', day: 'numeric' };
+            document.getElementById('outDate').innerText = d.toLocaleDateString('en-US', options).toUpperCase();
+            
+            document.getElementById('outTime').innerText = document.getElementById('inTime').value;
+        }
+
+        function updateColor() {
+            const color = document.getElementById('inColor').value;
+            document.getElementById('headerArea').style.color = color;
+            document.getElementById('outIcon').style.borderColor = color;
+            document.getElementById('outIcon').style.color = color;
+        }
+
+        function randomizeSerial() {
+            const num = Math.floor(Math.random() * 9000) + 1000;
+            document.getElementById('outSerial').innerText = "MTK-" + num;
+        }
+    </script>
+</body>
+</html>
